@@ -8,8 +8,8 @@ st.title("📊 Dynamic Rule-Based Data Verification App")
 
 st.markdown("""
 Upload your **Python rules file** and the **Excel file** you want to verify.
-The app will dynamically apply the rules and show a validation table.
-Each validation result can be downloaded as an Excel file (single sheet).
+The app will dynamically apply the rules and show validation tables.
+You can download all results as a single Excel file with multiple sheets.
 """)
 
 # Upload rules file (.py)
@@ -40,45 +40,42 @@ if data_file and rules_file:
     # Apply rules
     try:
         results = rules_module.check_rules(data_file)
-        if isinstance(results, dict):
-            st.markdown("## Validation Results:")
-            for k, v in results.items():
-                st.write(f"**{k}**")
-                if isinstance(v, pd.DataFrame):
-                    if not v.empty:
-                        st.dataframe(v)
-                        # Prepare Excel in-memory for download
-                        output = io.BytesIO()
-                        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                            v.to_excel(writer, index=False, sheet_name=k[:31])
-                        st.download_button(
-                            label=f"Download {k} as Excel",
-                            data=output.getvalue(),
-                            file_name=f"{k}.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
+        excel_output = io.BytesIO()
+        sheet_count = 0
+
+        # Prepare multi-sheet Excel file
+        with pd.ExcelWriter(excel_output, engine='xlsxwriter') as writer:
+            if isinstance(results, dict):
+                st.markdown("## Validation Results:")
+                for k, v in results.items():
+                    st.write(f"**{k}**")
+                    if isinstance(v, pd.DataFrame):
+                        if not v.empty:
+                            st.dataframe(v)
+                        else:
+                            st.success(f"No issues found in {k}!")
+                        v.to_excel(writer, index=False, sheet_name=k[:31])  # Excel sheet names max 31 chars
+                        sheet_count += 1
                     else:
-                        st.success(f"No issues found in {k}!")
+                        st.write(v)
+            elif isinstance(results, pd.DataFrame):
+                if results.empty:
+                    st.success("✅ No validation issues found!")
                 else:
-                    st.write(v)
-        elif isinstance(results, pd.DataFrame):
-            if results.empty:
-                st.success("✅ No validation issues found!")
+                    st.write("Validation results:")
+                    st.dataframe(results)
+                results.to_excel(writer, index=False, sheet_name="Validation")
+                sheet_count += 1
             else:
-                st.write("Validation results:")
-                st.dataframe(results)
-                # Download for single frame
-                output = io.BytesIO()
-                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                    results.to_excel(writer, index=False, sheet_name="Validation")
-                st.download_button(
-                    label="Download Validation Results as Excel",
-                    data=output.getvalue(),
-                    file_name="validation_results.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-        else:
-            st.write(results)
+                st.write(results)
+
+        if sheet_count > 0:
+            st.download_button(
+                label="Download ALL Results as Excel (multi-sheet)",
+                data=excel_output.getvalue(),
+                file_name="all_results.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
     except Exception as e:
         st.error(f"Error running rules: {e}")
 
