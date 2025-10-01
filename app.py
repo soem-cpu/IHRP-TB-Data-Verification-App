@@ -4,7 +4,7 @@ import importlib.util
 import io
 
 st.set_page_config(page_title="Dynamic Rule-Based Data Verification", layout="wide")
-st.title("📊 Dynamic Rule-Based Data Verification App")
+st.title("📊 TB Data Verification App")
 
 st.markdown("""
 Upload your **Python rules file** and the **Excel file** you want to verify.
