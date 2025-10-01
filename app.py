@@ -34,6 +34,26 @@ if data_file and rules_file:
     # Apply rules
     try:
         results = rules_module.check_rules(data_file)
+        # --- Display Summary Table ---
+        st.markdown("## Rule Summary:")
+        summary_data = []
+
+        if isinstance(results, dict):
+            for sheet_name, df in results.items():
+                if isinstance(df, pd.DataFrame):
+                    error_count = 0
+                    if "Error" in df.columns:
+                        # Count rows where the 'Error' column is not empty/NaN after stripping whitespace
+                        error_count = df["Error"].astype(str).str.strip().astype(bool).sum()
+                    
+                    # Append a single summary entry per sheet for the total errors
+                    summary_data.append({"Sheet Name": sheet_name, "Respective Rules": "Overall Sheet Errors", "Findings": error_count})
+
+        if summary_data:
+            summary_df = pd.DataFrame(summary_data)
+            st.dataframe(summary_df)
+        else:
+            st.write("No sheet data found or no errors to summarize.")
         # Prepare summary information
         summary_data = []
         if isinstance(results, dict):
