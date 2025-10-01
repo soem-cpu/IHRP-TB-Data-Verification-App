@@ -8,7 +8,7 @@ st.set_page_config(page_title="Dynamic Rule-Based Data Verification", layout="wi
 # Show TB image at top
 st.image("TB image2.jpg", width=200)  # adjust width as needed
 
-st.title("📊 IHRP: TB Data Verification App")
+st.title("📊 TB Data Verification App")
 
 st.markdown("""
 Upload your **Python rules file** and the **Excel file** you want to verify.
@@ -34,6 +34,23 @@ if data_file and rules_file:
     # Apply rules
     try:
         results = rules_module.check_rules(data_file)
+        # Prepare summary information
+        summary_data = []
+        if isinstance(results, dict):
+            for rule, df in results.items():
+                if isinstance(df, pd.DataFrame):
+                    error_count = 0
+                    if "Error" in df.columns:
+                        error_count = df["Error"].str.len().sum() # Counting the characters in error column
+                    summary_data.append({"Rule": rule, "Findings": error_count})
+
+        # Display Summary Table
+        st.markdown("## Rule Summary:")
+        if summary_data:
+            summary_df = pd.DataFrame(summary_data)
+            st.dataframe(summary_df)
+        else:
+            st.write("No rules were executed or no summary data available.")
         excel_output = io.BytesIO()
         sheet_count = 0
 
