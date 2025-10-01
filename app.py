@@ -4,6 +4,9 @@ import importlib.util
 import io
 
 st.set_page_config(page_title="Dynamic Rule-Based Data Verification", layout="wide")
+
+# Add logo/photo at the top
+st.image("logo.png", width=150)  # adjust width if needed
 st.title("📊 TB Data Verification App")
 
 st.markdown("""
