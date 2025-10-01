@@ -29,17 +29,7 @@ if rules_file:
 # Upload Excel data file
 data_file = st.file_uploader("Upload Excel file to verify", type=["xlsx", "csv"])
 if data_file and rules_file:
-    # Preview logic
-    if data_file.name.endswith("xlsx"):
-        xls = pd.ExcelFile(data_file)
-        preview_sheet = xls.sheet_names[0]
-        df_preview = xls.parse(preview_sheet)
-        st.write(f"Preview of uploaded data (first sheet: {preview_sheet}):")
-        st.dataframe(df_preview.head())
-    else:
-        df_preview = pd.read_csv(data_file)
-        st.write("Preview of uploaded data:")
-        st.dataframe(df_preview.head())
+
 
     # Apply rules
     try:
