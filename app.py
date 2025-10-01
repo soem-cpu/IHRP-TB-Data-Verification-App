@@ -33,7 +33,13 @@ if data_file and rules_file:
 
     # Apply rules
     try:
-        results = rules_module.check_rules(data_file)
+        results, summary = rules_module.check_rules(data_file) # the check_rules functions will return results and summary now
+
+        # Display Summary Table
+        st.markdown("## Rule Summary:")
+        summary_df = pd.DataFrame(summary) # here create a dataframe
+        st.dataframe(summary_df)
+
         excel_output = io.BytesIO()
         sheet_count = 0
 
